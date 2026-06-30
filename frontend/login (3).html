@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Login</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f2f2f2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  .box {
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    width: 300px;
+  }
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 12px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  button {
+    width: 100%;
+    padding: 10px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  button:hover {
+    background: #45a049;
+  }
+  #msg {
+    margin-top: 12px;
+    text-align: center;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<div class="box">
+  <h2>Login</h2>
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+  <button onclick="loginUser()">Okay</button>
+  <div id="msg"></div>
+</div>
+
+<script>
+const LOGIN_API_URL = "http://127.0.0.1:8000/login";
+
+function loginUser() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  const msg = document.getElementById("msg");
+
+  if (!email || !password) {
+    msg.style.color = "red";
+    msg.textContent = "Please fill both fields.";
+    return;
+  }
+
+  // login is sent as x-www-form-urlencoded form data, not JSON
+  // NOTE: FastAPI's OAuth2PasswordRequestForm always expects the key "username",
+  // even though we are putting the user's email value into it.
+  const formData = new URLSearchParams();
+  formData.append("username", email);
+  formData.append("password", password);
+
+  msg.style.color = "black";
+  msg.textContent = "Logging in...";
+
+  fetch(LOGIN_API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: formData
+  })
+  .then(response => {
+    if (response.status === 200) {
+      // read the JSON body to get the access_token, then save it
+      response.json().then(data => {
+        sessionStorage.setItem("access_token", data.access_token);
+        window.location.href = "create-post.html";
+      });
+    } else {
+      window.location.href = "error.html";
+    }
+  })
+  .catch(error => {
+    window.location.href = "error.html";
+  });
+}
+</script>
+
+</body>
+</html>
